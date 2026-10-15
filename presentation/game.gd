@@ -25,6 +25,7 @@ var font: Font
 
 
 func _ready() -> void:
+	Engine.max_fps = 120
 	font = ThemeDB.fallback_font
 	_bind_modules()
 	queue_redraw()
@@ -78,6 +79,10 @@ func set_training_mode(enabled: bool) -> void:
 func advance_frame(inputs: Array[Dictionary]) -> Dictionary:
 	if not modules_ready or paused:
 		return match_state
+	for index in range(displayed_events.size() - 1, -1, -1):
+		displayed_events[index]["life"] -= 1
+		if displayed_events[index]["life"] <= 0:
+			displayed_events.remove_at(index)
 	if bool(match_state.get("round_over", false)):
 		if training_enabled:
 			training_reset_ticks += 1
@@ -102,10 +107,6 @@ func _physics_process(_delta: float) -> void:
 		return
 	var inputs: Array[Dictionary] = input_source.call("sample_frame")
 	advance_frame(inputs)
-	for index in range(displayed_events.size() - 1, -1, -1):
-		displayed_events[index]["life"] -= 1
-		if displayed_events[index]["life"] <= 0:
-			displayed_events.remove_at(index)
 
 
 func _process(delta: float) -> void:

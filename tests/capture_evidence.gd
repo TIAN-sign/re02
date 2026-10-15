@@ -47,13 +47,15 @@ func _run() -> void:
 	game.show_history = false
 	_approach()
 	for tick in range(3600):
+		var players: Array = game.match_state["players"]
+		_key(KEY_D, players[1]["pos"].x - players[0]["pos"].x > 65)
 		_key(KEY_J, tick % 48 == 0)
 		_key(KEY_K, tick % 48 == 10)
 		_key(KEY_L, tick % 96 == 40)
 		_tick()
 		if game.match_state["round_over"]:
 			break
-	for key in [KEY_J, KEY_K, KEY_L]:
+	for key in [KEY_D, KEY_J, KEY_K, KEY_L]:
 		_key(key, false)
 	if not game.match_state["round_over"]:
 		printerr("Scripted production input did not reach KO; no KO evidence produced")
