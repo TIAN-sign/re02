@@ -1,0 +1,40 @@
+# Local secrets and machine-specific configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.netrc
+.git-credentials
+.aws/
+.ssh/
+.codex/
+.agents/
+
+# Environment scratch files and downloaded private material
+/library-files/
+/scratch/
+/shared/
+/tmp/
+
+# Common dependency, cache and generated output directories
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.cache/
+.godot/
+/build/
+/dist/
+/artifacts/
+*.log
+
+# Operating system and editor-local files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~

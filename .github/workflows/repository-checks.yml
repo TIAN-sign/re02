@@ -1,0 +1,36 @@
+name: Repository checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  whitespace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check changed text
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            git diff --check "$BASE_SHA...$HEAD_SHA"
+          elif [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            EMPTY_TREE=$(git hash-object -t tree /dev/null)
+            git diff --check "$EMPTY_TREE" "$HEAD_SHA"
+          else
+            git diff --check "$BASE_SHA" "$HEAD_SHA"
+          fi
