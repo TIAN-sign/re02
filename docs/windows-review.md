@@ -5,7 +5,7 @@
 ## 拉取指定版本
 
 ```powershell
-git clone --branch feat/playable-slice https://github.com/TIAN-sign/re02.git fighter
+git clone https://github.com/TIAN-sign/re02.git fighter
 cd fighter
 git rev-parse HEAD
 ```
@@ -14,7 +14,7 @@ git rev-parse HEAD
 
 ## 启动
 
-在 Godot 项目管理器中导入根目录 `project.godot`，按 F6 运行当前场景或 F5 运行整个项目。也可以使用 PowerShell，按实际路径替换引擎位置：
+在 Godot 项目管理器中导入根目录 `project.godot`，按 F5 运行整个项目。也可以使用 PowerShell，按实际路径替换引擎位置：
 
 ```powershell
 & 'C:\Tools\Godot\Godot_v4.6.3-stable_win64.exe' --path .
@@ -34,8 +34,8 @@ git rev-parse HEAD
 首两个连接的手柄依次分配 P1、P2。键盘仍可同时使用；使用手柄无需额外输入服务。键盘有按键冲突时优先使用两个手柄。P2 攻击使用小键盘，不是主键区数字。
 
 - F1：切换本地对战 / 训练，并重置本局。
-- F2：显示伤害框（红）与受击框（绿）。
-- F3：显示逐帧输入历史，`L/H/T/G` 分别为轻击、重击、投技、防御。
+- F2：显示攻击框（红）、受击框（绿）、投技框（金）与推挤框（紫）。
+- F3：显示训练假人覆盖前的逐帧输入历史，`L/H/T/G` 分别为轻击、重击、投技、防御；此历史不是完整训练对局回放。
 - F4：循环训练假人模式。
 - R / 手柄 Back：重赛。
 - Escape / 手柄 Start：暂停、继续。
@@ -54,7 +54,7 @@ git rev-parse HEAD
 
 ## 自动整合检查
 
-真实模块合入后执行：
+所有真实模块已经合入。执行：
 
 ```powershell
 & 'C:\Tools\Godot\Godot_v4.6.3-stable_win64.exe' --headless --path . --editor --quit
@@ -62,3 +62,5 @@ git rev-parse HEAD
 ```
 
 整合测试直接使用生产入口与真实模块，覆盖 60 Hz 驱动、移动、暂停、伤害、KO、重赛、训练入口、历史与显示开关。没有模块时测试会失败，不会用替身判为通过。
+
+已安装 Python 3 时，可运行 `python tests/run_checks.py --godot 'C:\Tools\Godot\Godot_v4.6.3-stable_win64.exe'` 统一执行模块、输入物理帧及整合检查。实际 Linux 渲染证据见 [截图记录](evidence/README.md)；它不替代 Windows 与实体手柄验收。

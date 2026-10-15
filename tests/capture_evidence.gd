@@ -5,6 +5,8 @@ extends SceneTree
 var game: Node
 var output_directory: String
 var captures: Array[Dictionary] = []
+var desired_keys: Dictionary = {}
+var injected_keys: Dictionary = {}
 
 
 func _initialize() -> void:
@@ -33,26 +35,26 @@ func _run() -> void:
 	game.set_training_mode(true)
 	game.show_boxes = true
 	game.show_history = true
-	_approach()
+	await _approach()
 	_key(KEY_J, true)
-	_tick()
+	await _tick()
 	_key(KEY_J, false)
 	for tick in range(30):
-		_tick()
+		await _tick()
 		if not game.match_state["hitboxes"].is_empty():
 			break
 	await _capture("training-hitboxes.png")
 	game.set_training_mode(false)
 	game.show_boxes = false
 	game.show_history = false
-	_approach()
+	await _approach()
 	for tick in range(3600):
 		var players: Array = game.match_state["players"]
 		_key(KEY_D, players[1]["pos"].x - players[0]["pos"].x > 65)
 		_key(KEY_J, tick % 48 == 0)
 		_key(KEY_K, tick % 48 == 10)
 		_key(KEY_L, tick % 96 == 40)
-		_tick()
+		await _tick()
 		if game.match_state["round_over"]:
 			break
 	for key in [KEY_D, KEY_J, KEY_K, KEY_L]:
@@ -86,23 +88,32 @@ func _approach() -> void:
 		var players: Array = game.match_state["players"]
 		if players[1]["pos"].x - players[0]["pos"].x < 80:
 			break
-		_tick()
+		await _tick()
 	_key(KEY_D, false)
-	_tick()
+	await _tick()
 
 
 func _tick() -> void:
+	# Inject before the consuming physics tick, matching the production InputMap contract.
+	await process_frame
+	for key in desired_keys:
+		var pressed: bool = desired_keys[key]
+		if pressed == bool(injected_keys.get(key, false)):
+			continue
+		var event := InputEventKey.new()
+		event.keycode = key
+		event.physical_keycode = key
+		event.pressed = pressed
+		Input.parse_input_event(event)
+		injected_keys[key] = pressed
 	Input.flush_buffered_events()
+	await physics_frame
 	var inputs: Array[Dictionary] = game.input_source.sample_frame()
 	game.advance_frame(inputs)
 
 
 func _key(key: Key, pressed: bool) -> void:
-	var event := InputEventKey.new()
-	event.keycode = key
-	event.physical_keycode = key
-	event.pressed = pressed
-	Input.parse_input_event(event)
+	desired_keys[key] = pressed
 
 
 func _capture(filename: String) -> void:

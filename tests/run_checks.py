@@ -61,13 +61,20 @@ def main() -> int:
         common = ["--headless", "--path", str(root)]
         if not run("Project import and script parsing", [*common, "--editor", "--quit"]):
             return 1
-        tests = []
-        for directory in ("combat/tests", "input/tests", "training/tests"):
-            tests.extend(sorted(root.joinpath(directory).glob("test_*.gd")))
-        tests.append(root / "tests/integration_smoke.gd")
-        for test in tests:
-            relative = test.relative_to(root).as_posix()
+        tests = [
+            "combat/tests/run.gd",
+            "input/tests/run_tests.gd",
+            "input/tests/engine_input_tests.gd",
+            "tests/integration_smoke.gd",
+        ]
+        for relative in tests:
             if not run(relative, [*common, "--script", f"res://{relative}"]):
+                return 1
+        for fps in (30, 144):
+            if not run(
+                f"Engine input at {fps} render FPS",
+                [*common, "--max-fps", str(fps), "--script", "res://input/tests/engine_input_tests.gd"],
+            ):
                 return 1
         if not run("Production scene startup", [*common, "--quit-after", "120"]):
             return 1

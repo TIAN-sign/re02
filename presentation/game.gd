@@ -205,12 +205,12 @@ func _draw_fighter(fighter: Dictionary) -> void:
 	var state: String = str(fighter.get("state", "idle"))
 	var frame: int = int(fighter.get("state_frame", 0))
 	var accent: Color = CYAN if player == 0 else GOLD
-	var is_crouched: bool = state == "crouch"
+	var is_crouched: bool = bool(fighter.get("crouching", state == "crouch"))
 	var is_ko: bool = state == "ko" or state == "knockdown"
 	var lean: float = 0.0
-	if state in ["light", "heavy", "throw"]:
+	if state in ["light", "heavy", "throw", "throwing", "low", "air"]:
 		lean = 13.0
-	elif state in ["hitstun", "blockstun"]:
+	elif state in ["hitstun", "blockstun", "thrown"]:
 		lean = -8.0
 	var stance: float = 0.0
 	if state == "walk":
@@ -242,15 +242,17 @@ func _draw_fighter(fighter: Dictionary) -> void:
 	var front_hand := chest + Vector2(38, -8)
 	if state == "light":
 		front_hand = chest + Vector2(86, 1)
-	elif state == "heavy":
+	elif state in ["heavy", "air"]:
 		front_hand = chest + Vector2(103, -15)
-	elif state == "throw":
+	elif state == "low":
+		front_hand = chest + Vector2(86, 25)
+	elif state in ["throw", "throwing"]:
 		front_hand = chest + Vector2(67, 12)
 		back_hand = chest + Vector2(60, -8)
 	elif state in ["guard", "blockstun"]:
 		front_hand = chest + Vector2(28, -20)
 		back_hand = chest + Vector2(17, -4)
-	elif state == "hitstun":
+	elif state in ["hitstun", "thrown"]:
 		front_hand = chest + Vector2(47, 35)
 	_limb(chest + Vector2(-17, 4), chest + Vector2(-31, 19), back_hand, accent.darkened(0.5), 12)
 	_limb(chest + Vector2(16, 4), (chest + front_hand) * 0.5 + Vector2(0, 17), front_hand, accent.darkened(0.08), 13)
@@ -281,12 +283,14 @@ func _draw_effects() -> void:
 			var direction := Vector2.from_angle(float(ray) * TAU / 8.0 + 0.2)
 			draw_line(point + direction * (8 + (1 - life) * 18), point + direction * (20 + (1 - life) * 35), color, 3, true)
 		if event_type in ["hit", "throw", "block"]:
-			_text(event_type.to_upper(), point + Vector2(-25, -42 - (1 - life) * 15), 15, color)
+			var label: String = "THROW TECH" if bool(event.get("tech", false)) else event_type.to_upper()
+			_text(label, point + Vector2(-25, -42 - (1 - life) * 15), 15, color)
 
 
 func _draw_boxes() -> void:
-	for group in ["hurtboxes", "hitboxes"]:
-		var color: Color = Color(0.25, 1, 0.6, 0.8) if group == "hurtboxes" else Color(1, 0.25, 0.35, 0.9)
+	var colors := {"pushboxes": Color(0.65, 0.55, 1, 0.7), "hurtboxes": Color(0.25, 1, 0.6, 0.8), "hitboxes": Color(1, 0.25, 0.35, 0.9), "throwboxes": Color(1, 0.75, 0.25, 0.9)}
+	for group in ["pushboxes", "hurtboxes", "hitboxes", "throwboxes"]:
+		var color: Color = colors[group]
 		for box in match_state.get(group, []):
 			var rect: Rect2 = box.get("rect", Rect2())
 			draw_rect(rect, Color(color, 0.12), true)
@@ -308,6 +312,9 @@ func _draw_hud(players: Array) -> void:
 			hp = int(players[player].get("hp", 1000))
 			max_hp = maxi(1, int(players[player].get("max_hp", 1000)))
 			state = str(players[player].get("state", "idle"))
+			var phase: String = str(players[player].get("phase", "none"))
+			if phase != "none":
+				state += " / " + phase + " %df" % int(players[player].get("state_frame", 0))
 			combo = int(players[player].get("combo", 0))
 		var ratio: float = clampf(float(hp) / float(max_hp), 0, 1)
 		_text("P%d   KITE" % (player + 1), Vector2(x, 52), 17, accent)
@@ -331,6 +338,8 @@ func _draw_hud(players: Array) -> void:
 	else:
 		_text("LOCAL TWO PLAYER  /  MIRROR MATCH", Vector2(28, 181), 12, MUTED)
 	_text("FRAME %06d" % int(match_state.get("frame", 0)), Vector2(1110, 181), 12, MUTED)
+	if show_boxes:
+		_text("BOXES: HURT / GREEN   HIT / RED   THROW / GOLD   PUSH / VIOLET", Vector2(425, 622), 11, MUTED)
 
 
 func _button(rect: Rect2, label: String, active: bool) -> void:
@@ -341,7 +350,7 @@ func _button(rect: Rect2, label: String, active: bool) -> void:
 
 func _draw_history(player: int, origin: Vector2, accent: Color) -> void:
 	draw_rect(Rect2(origin, Vector2(200, 208)), Color(0.035, 0.06, 0.1, 0.92))
-	_text("P%d  /  INPUT HISTORY" % (player + 1), origin + Vector2(12, 24), 12, accent)
+	_text("P%d  /  INPUT (PRE-DUMMY)" % (player + 1), origin + Vector2(12, 24), 11, accent)
 	var history: Array = input_source.call("history", player)
 	var rows: Array[Dictionary] = []
 	for index in range(history.size() - 1, -1, -1):

@@ -1,0 +1,56 @@
+{
+  "captures": [
+    {
+      "file": "versus.png",
+      "frame": 0,
+      "hitboxes": 0,
+      "hp": [
+        1000,
+        1000
+      ],
+      "round_over": false,
+      "training": false,
+      "winner": -1
+    },
+    {
+      "file": "training-hitboxes.png",
+      "frame": 88,
+      "hitboxes": 1,
+      "hp": [
+        1000,
+        920
+      ],
+      "round_over": false,
+      "training": true,
+      "winner": -1
+    },
+    {
+      "file": "ko.png",
+      "frame": 472,
+      "hitboxes": 0,
+      "hp": [
+        1000,
+        0
+      ],
+      "round_over": true,
+      "training": false,
+      "winner": 0
+    },
+    {
+      "file": "rematch.png",
+      "frame": 0,
+      "hitboxes": 0,
+      "hp": [
+        1000,
+        1000
+      ],
+      "round_over": false,
+      "training": false,
+      "winner": -1
+    }
+  ],
+  "display": "X11",
+  "engine": "4.6.3-stable (official)",
+  "method": "Real production viewport; scripted keyboard events; no replacement combat state",
+  "os": "Linux"
+}
