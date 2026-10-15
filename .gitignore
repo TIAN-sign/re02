@@ -16,7 +16,6 @@
 # Environment scratch files and downloaded private material
 /library-files/
 /scratch/
-/shared/
 /tmp/
 
 # Common dependency, cache and generated output directories
